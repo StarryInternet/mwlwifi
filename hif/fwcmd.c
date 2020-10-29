@@ -3849,8 +3849,6 @@ int mwl_fwcmd_get_txpwrlmt_cfg_data(struct ieee80211_hw *hw)
 			return -EIO;
 		}
 
-		mutex_unlock(&priv->fwcmd_mutex);
-
 		subband_len = le16_to_cpu(pcmd->cmd_hdr.len) -
 			sizeof(struct hostcmd_header) - 2;
 		if (total_len <= SYSADPT_TXPWRLMT_CFG_BUF_SIZE) {
@@ -3866,6 +3864,8 @@ int mwl_fwcmd_get_txpwrlmt_cfg_data(struct ieee80211_hw *hw)
 			wiphy_err(hw->wiphy,
 				  "TxPwrLmt cfg buf size is not enough\n");
 		}
+
+		mutex_unlock(&priv->fwcmd_mutex);
 	}
 
 	return 0;
