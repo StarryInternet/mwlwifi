@@ -57,7 +57,7 @@ static bool pcie_download_ddr_init(struct mwl_priv *priv)
 	u32 len = 0;
 
 	/* download ddr init code */
-	wiphy_debug(priv->hw->wiphy, "ddr init: download start\n");
+	wiphy_dbg(priv->hw->wiphy, "ddr init: download start\n");
 
 	while (size_ddr_init_downloaded < size_ddr_init) {
 		len = readl(pcie_priv->iobase1 + 0xc40);
@@ -111,7 +111,7 @@ static bool pcie_download_ddr_init(struct mwl_priv *priv)
 		size_ddr_init_downloaded += len;
 	}
 
-	wiphy_debug(priv->hw->wiphy, "ddr init: download complete\n");
+	wiphy_dbg(priv->hw->wiphy, "ddr init: download complete\n");
 
 	return true;
 }
@@ -173,7 +173,7 @@ int pcie_download_firmware(struct ieee80211_hw *hw)
 	 * reside on its respective blocks such as ITCM, DTCM, SQRAM,
 	 * (or even DDR, AFTER DDR is init'd before fw download
 	 */
-	wiphy_debug(hw->wiphy, "fw download start\n");
+	wiphy_dbg(hw->wiphy, "fw download start\n");
 
 	if (priv->chip_type != MWL8997)
 		/* Disable PFU before FWDL */
@@ -237,9 +237,9 @@ int pcie_download_firmware(struct ieee80211_hw *hw)
 		size_fw_downloaded += len;
 	}
 
-	wiphy_debug(hw->wiphy,
-		    "FwSize = %d downloaded Size = %d curr_iteration %d\n",
-		    (int)fw->size, size_fw_downloaded, curr_iteration);
+	wiphy_dbg(hw->wiphy,
+		  "FwSize = %d downloaded Size = %d curr_iteration %d\n",
+		  (int)fw->size, size_fw_downloaded, curr_iteration);
 
 	if (mwl_force_abort_after_fw_load != 0) {
 		wiphy_warn(hw->wiphy, "forcing fw load abort\n");
@@ -272,7 +272,7 @@ int pcie_download_firmware(struct ieee80211_hw *hw)
 		goto err_download;
 	}
 
-	wiphy_debug(hw->wiphy, "fw download complete\n");
+	wiphy_dbg(hw->wiphy, "fw download complete\n");
 	writel(0x00, pcie_priv->iobase1 + MACREG_REG_INT_CODE);
 
 	return 0;
