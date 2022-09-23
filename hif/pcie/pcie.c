@@ -17,6 +17,7 @@
 
 #include <linux/module.h>
 #include <linux/etherdevice.h>
+#include <linux/version.h>
 
 #include "sysadpt.h"
 #include "core.h"
@@ -1301,14 +1302,17 @@ static void pcie_ba_account(struct mwl_priv *priv,
 static void pcie_bf_mimo_ctrl_decode(struct mwl_priv *priv,
 				     struct acnt_bf_mimo_ctrl_s *bf_mimo_ctrl)
 {
+#ifndef DISABLE_PCIE_BF_MIMO_CTRL_DECODE
 	struct file *fp_data = NULL;
 	const char filename[] = "/tmp/BF_MIMO_Ctrl_Field_Output.txt";
 	char str_buf[256];
 	char *buf = &str_buf[0];
 	mm_segment_t oldfs;
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(5, 10, 0)
 	oldfs = get_fs();
 	set_fs(KERNEL_DS);
+#endif
 
 	buf += sprintf(buf, "\nMAC: %pM\n", bf_mimo_ctrl->rec_mac);
 	buf += sprintf(buf, "SU_0_MU_1: %d\n", bf_mimo_ctrl->type);
@@ -1320,15 +1324,25 @@ static void pcie_bf_mimo_ctrl_decode(struct mwl_priv *priv,
 	fp_data = filp_open(filename, O_RDWR | O_CREAT | O_TRUNC, 0);
 
 	if (!IS_ERR(fp_data)) {
-		__kernel_write(fp_data, str_buf, strlen(str_buf),
-			       &fp_data->f_pos);
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(5, 10, 0)
+	__kernel_write(fp_data, str_buf, strlen(str_buf),
+				   &fp_data->f_pos);
+#else
+	kernel_write(fp_data, str_buf, strlen(str_buf),
+				&fp_data->f_pos);
+#endif
+
 		filp_close(fp_data, current->files);
 	} else {
 		wiphy_err(priv->hw->wiphy, "Error opening %s! %x\n",
 			  filename, (unsigned int)fp_data);
 	}
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(5, 10, 0)
 	set_fs(oldfs);
+#endif
+
+#endif
 }
 
 static void pcie_process_account(struct ieee80211_hw *hw)
@@ -1661,5 +1675,4 @@ MODULE_DESCRIPTION(PCIE_DRV_DESC);
 MODULE_VERSION(PCIE_DRV_VERSION);
 MODULE_AUTHOR("Marvell Semiconductor, Inc.");
 MODULE_LICENSE("GPL v2");
-MODULE_SUPPORTED_DEVICE(PCIE_DEV_NAME);
 MODULE_DEVICE_TABLE(pci, pcie_id_tbl);
